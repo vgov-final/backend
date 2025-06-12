@@ -1,0 +1,48 @@
+# Docker ignore file for V-GOV Backend
+
+# Build artifacts
+target/
+!target/vgov-0.0.1-SNAPSHOT.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Documentation
+README.md
+*.md
+
+# Docker files (not needed in image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+logs/
+*.log
+
+# Runtime directories
+uploads/
+temp/
+
+# Test files
+src/test/
+
+# Maven wrapper (already copied explicitly)
+.mvn/wrapper/maven-wrapper.jar
