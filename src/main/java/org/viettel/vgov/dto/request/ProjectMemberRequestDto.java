@@ -15,7 +15,7 @@ public class ProjectMemberRequestDto {
     private Long userId;
     
     @NotNull(message = "Workload percentage is required")
-    @DecimalMin(value = "0.01", message = "Workload percentage must be greater than 0")
+    @DecimalMin(value = "0.00", message = "Workload percentage must be non-negative")
     @DecimalMax(value = "100.00", message = "Workload percentage cannot exceed 100%")
     private BigDecimal workloadPercentage;
     

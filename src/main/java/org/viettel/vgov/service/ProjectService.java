@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.viettel.vgov.dto.request.ProjectMemberRequestDto;
 import org.viettel.vgov.dto.request.ProjectRequestDto;
 import org.viettel.vgov.dto.response.PagedResponse;
 import org.viettel.vgov.dto.response.ProjectResponseDto;
@@ -19,6 +20,7 @@ import org.viettel.vgov.repository.ProjectRepository;
 import org.viettel.vgov.repository.UserRepository;
 import org.viettel.vgov.security.UserPrincipal;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
+    private final ProjectMemberService projectMemberService;
     
     public PagedResponse<ProjectResponseDto> getAllProjects(Pageable pageable) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -198,6 +201,19 @@ public class ProjectService {
         project.setUpdatedBy(currentUser);
         
         Project savedProject = projectRepository.save(project);
+
+        // Automatically add the PM to the project with 0% workload
+        if (savedProject.getPmEmail() != null && !savedProject.getPmEmail().isEmpty()) {
+            userRepository.findByEmail(savedProject.getPmEmail()).ifPresent(pmUser -> {
+                if (pmUser.getRole() == User.Role.pm) {
+                    ProjectMemberRequestDto memberRequestDto = new ProjectMemberRequestDto();
+                    memberRequestDto.setUserId(pmUser.getId());
+                    memberRequestDto.setWorkloadPercentage(BigDecimal.ZERO);
+                    projectMemberService.addMemberToProject(savedProject.getId(), memberRequestDto);
+                }
+            });
+        }
+
         return projectMapper.toResponseDto(savedProject);
     }
     
