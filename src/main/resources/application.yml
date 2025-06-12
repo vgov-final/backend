@@ -20,6 +20,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     defer-datasource-initialization: true
   
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:sql/seed-data.sql
+  
   security:
     jwt:
       secret: ${JWT_SECRET:your-very-long-secret-key-for-jwt-token-signing}
