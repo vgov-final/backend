@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.viettel.vgov.dto.request.UserRequestDto;
 import org.viettel.vgov.dto.response.PagedResponse;
+import org.viettel.vgov.dto.response.PmInfoResponseDto;
 import org.viettel.vgov.dto.response.UserResponseDto;
 import org.viettel.vgov.mapper.UserMapper;
 import org.viettel.vgov.model.User;
@@ -234,5 +235,37 @@ public class UserService {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         return userRepository.findByEmail(userPrincipal.getEmail())
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
+    }
+    
+    /**
+     * Get all active PMs with their project counts and workloads
+     * @return List of PM information DTOs
+     */
+    public List<PmInfoResponseDto> getAllPMsInfo() {
+        List<User> pmUsers = userRepository.findActiveUsersByRole(User.Role.pm);
+        
+        return pmUsers.stream()
+                .map(user -> {
+                    // Get active project count
+                    Integer activeProjectCount = projectMemberRepository.countActiveProjectsByUserId(user.getId());
+                    if (activeProjectCount == null) {
+                        activeProjectCount = 0;
+                    }
+                    
+                    // Get total workload
+                    BigDecimal totalWorkload = projectMemberRepository.getTotalWorkloadByUserId(user.getId());
+                    if (totalWorkload == null) {
+                        totalWorkload = BigDecimal.ZERO;
+                    }
+                    
+                    return PmInfoResponseDto.builder()
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .email(user.getEmail())
+                            .activeProjectCount(activeProjectCount)
+                            .totalWorkload(totalWorkload)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

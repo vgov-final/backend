@@ -13,11 +13,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.viettel.vgov.dto.request.UserRequestDto;
 import org.viettel.vgov.dto.response.PagedResponse;
+import org.viettel.vgov.dto.response.PmInfoResponseDto;
 import org.viettel.vgov.dto.response.StandardResponse;
 import org.viettel.vgov.dto.response.UserResponseDto;
 import org.viettel.vgov.model.User;
 import org.viettel.vgov.service.UserService;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -114,6 +116,14 @@ public class UserController {
     public ResponseEntity<StandardResponse<Map<String, Object>>> getUserWorkload(@PathVariable Long id) {
         Map<String, Object> workload = userService.getUserWorkload(id);
         return ResponseEntity.ok(StandardResponse.success(workload));
+    }
+    
+    @Operation(summary = "Get all PM information", description = "Get list of all project managers with their active project counts and total workloads (Admin only)")
+    @GetMapping("/pms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<StandardResponse<List<PmInfoResponseDto>>> getAllPMs() {
+        List<PmInfoResponseDto> pms = userService.getAllPMsInfo();
+        return ResponseEntity.ok(StandardResponse.success(pms));
     }
     
 }
