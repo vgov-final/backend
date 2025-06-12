@@ -38,20 +38,6 @@ public class ProfileController {
         return ResponseEntity.ok(profile);
     }
     
-    @Operation(summary = "Update profile photo", description = "Upload or update user's profile photo")
-    @PutMapping("/photo")
-    public ResponseEntity<UserResponseDto> updateProfilePhoto(@Valid @RequestBody ProfileUpdateRequestDto requestDto) {
-        UserResponseDto profile = profileService.updateProfilePhoto(requestDto);
-        return ResponseEntity.ok(profile);
-    }
-    
-    @Operation(summary = "Remove profile photo", description = "Remove user's profile photo")
-    @DeleteMapping("/photo")
-    public ResponseEntity<Map<String, String>> removeProfilePhoto() {
-        profileService.removeProfilePhoto();
-        return ResponseEntity.ok(Map.of("message", "Profile photo removed successfully"));
-    }
-    
     @Operation(summary = "Change password", description = "Change user's password")
     @PutMapping("/password")
     public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody PasswordChangeRequestDto requestDto) {

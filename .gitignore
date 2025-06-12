@@ -40,8 +40,3 @@ build/
 
 ### Docker Volumes ###
 postgres_data/
-minio_data/
-app_uploads/
-
-### Application Uploads ###
-uploads/

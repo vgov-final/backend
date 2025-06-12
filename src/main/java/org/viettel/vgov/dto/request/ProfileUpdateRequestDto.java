@@ -8,5 +8,4 @@ public class ProfileUpdateRequestDto {
     private String fullName;
     private String gender;
     private String birthDate;
-    private String profilePhotoUrl;
 }

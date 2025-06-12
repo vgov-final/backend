@@ -23,8 +23,6 @@ public class UserResponseDto {
     
     private LocalDate birthDate;
     
-    private String profilePhotoUrl;
-    
     private Boolean isActive;
     
     private LocalDateTime createdAt;

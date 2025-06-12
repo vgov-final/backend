@@ -1,6 +1,9 @@
 spring:
   application:
     name: vgov
+
+  config:
+    import: optional:file:.env[.properties]
   
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vgov}
@@ -15,7 +18,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
     defer-datasource-initialization: true
   
   security:
@@ -26,18 +28,6 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
-app:
-  file:
-    upload-dir: ${FILE_UPLOAD_DIR:./uploads}
-    base-url: ${FILE_BASE_URL:http://localhost:8080/api/files}
-    max-file-size: ${MAX_FILE_SIZE:10MB}
-    max-request-size: ${MAX_REQUEST_SIZE:10MB}
-  minio:
-    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
-    access-key: ${MINIO_ACCESS_KEY:minioadmin}
-    secret-key: ${MINIO_SECRET_KEY:minioadmin}
-    bucket-name: ${MINIO_BUCKET_NAME:vgov-files}
-    secure: ${MINIO_SECURE:false}
 
 management:
   endpoints:
@@ -52,5 +42,5 @@ logging:
   level:
     org.viettel.vgov: ${LOG_LEVEL:INFO}
     org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN

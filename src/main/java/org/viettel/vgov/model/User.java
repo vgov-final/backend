@@ -45,9 +45,6 @@ public class User {
     @Column(name = "birth_date")
     private LocalDate birthDate;
     
-    @Column(name = "profile_photo_url", length = 500)
-    private String profilePhotoUrl;
-    
     @Column(name = "is_active")
     private Boolean isActive = true;
     

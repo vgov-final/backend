@@ -17,7 +17,6 @@ public class UserMapper implements BaseMapper<User, UserRequestDto, UserResponse
         user.setRole(requestDto.getRole());
         user.setGender(requestDto.getGender());
         user.setBirthDate(requestDto.getBirthDate());
-        user.setProfilePhotoUrl(requestDto.getProfilePhotoUrl());
         user.setIsActive(requestDto.getIsActive());
         return user;
     }
@@ -32,7 +31,6 @@ public class UserMapper implements BaseMapper<User, UserRequestDto, UserResponse
         dto.setRole(entity.getRole());
         dto.setGender(entity.getGender());
         dto.setBirthDate(entity.getBirthDate());
-        dto.setProfilePhotoUrl(entity.getProfilePhotoUrl());
         dto.setIsActive(entity.getIsActive());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
@@ -54,7 +52,6 @@ public class UserMapper implements BaseMapper<User, UserRequestDto, UserResponse
         user.setRole(requestDto.getRole());
         user.setGender(requestDto.getGender());
         user.setBirthDate(requestDto.getBirthDate());
-        user.setProfilePhotoUrl(requestDto.getProfilePhotoUrl());
         user.setIsActive(requestDto.getIsActive());
     }
 }

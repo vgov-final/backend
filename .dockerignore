@@ -38,7 +38,6 @@ logs/
 *.log
 
 # Runtime directories
-uploads/
 temp/
 
 # Test files

@@ -2,9 +2,7 @@ package org.viettel.vgov.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -40,7 +38,6 @@ public class SwaggerConfig {
                         new Tag().name("Work Logs").description("Work log tracking and reporting"),
                         new Tag().name("Dashboard & Analytics").description("Dashboard overview and analytics data"),
                         new Tag().name("Notifications").description("In-app notification management"),
-                        new Tag().name("File Management").description("File upload, download and management via MinIO"),
                         new Tag().name("System & Lookup").description("System information and lookup data endpoints")
                 ));
     }

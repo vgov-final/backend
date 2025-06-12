@@ -63,41 +63,10 @@ public class ProfileService {
                 throw new IllegalArgumentException("Invalid birth date format. Expected format: YYYY-MM-DD");
             }
         }
-        if (requestDto.getProfilePhotoUrl() != null) {
-            currentUser.setProfilePhotoUrl(requestDto.getProfilePhotoUrl());
-        }
-        
         currentUser.setUpdatedBy(currentUser);
         
         User savedUser = userRepository.save(currentUser);
         return userMapper.toResponseDto(savedUser);
-    }
-    
-    public UserResponseDto updateProfilePhoto(ProfileUpdateRequestDto requestDto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
-        User currentUser = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
-        currentUser.setProfilePhotoUrl(requestDto.getProfilePhotoUrl());
-        currentUser.setUpdatedBy(currentUser);
-        
-        User savedUser = userRepository.save(currentUser);
-        return userMapper.toResponseDto(savedUser);
-    }
-    
-    public void removeProfilePhoto() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
-        User currentUser = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
-        currentUser.setProfilePhotoUrl(null);
-        currentUser.setUpdatedBy(currentUser);
-        
-        userRepository.save(currentUser);
     }
     
     public void changePassword(PasswordChangeRequestDto requestDto) {

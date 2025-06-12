@@ -31,7 +31,5 @@ public class UserRequestDto {
     
     private LocalDate birthDate;
     
-    private String profilePhotoUrl;
-    
     private Boolean isActive = true;
 }
