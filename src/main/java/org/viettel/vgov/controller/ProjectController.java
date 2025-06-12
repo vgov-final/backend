@@ -15,9 +15,11 @@ import org.viettel.vgov.dto.request.ProjectRequestDto;
 import org.viettel.vgov.dto.response.PagedResponse;
 import org.viettel.vgov.dto.response.ProjectResponseDto;
 import org.viettel.vgov.dto.response.StandardResponse;
+import org.viettel.vgov.dto.response.UserProjectHistoryResponseDto;
 import org.viettel.vgov.model.Project;
 import org.viettel.vgov.service.ProjectService;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,9 +29,9 @@ import java.util.Map;
 @Tag(name = "Project Management", description = "Project CRUD operations and status management")
 @SecurityRequirement(name = "bearerAuth")
 public class ProjectController {
-    
+
     private final ProjectService projectService;
-    
+
     @Operation(summary = "Get all projects", description = "List projects based on role permissions with filters - Admin: all projects, PM: managed projects, Others: assigned projects")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PM') or hasRole('DEV') or hasRole('BA') or hasRole('TEST')")
@@ -41,7 +43,7 @@ public class ProjectController {
         PagedResponse<ProjectResponseDto> projects = projectService.getAllProjects(pageable, search, projectStatus, projectType);
         return ResponseEntity.ok(StandardResponse.success(projects));
     }
-    
+
     @Operation(summary = "Get project by ID", description = "Get project details by ID - role-based access control")
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PM') or @projectSecurityService.canAccessProject(#id, authentication.name)")
@@ -49,7 +51,7 @@ public class ProjectController {
         ProjectResponseDto project = projectService.getProjectById(id);
         return ResponseEntity.ok(StandardResponse.success(project));
     }
-    
+
     @Operation(summary = "Create new project", description = "Create a new project (Admin only)")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -58,7 +60,7 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(StandardResponse.success(project, "Project created successfully"));
     }
-    
+
     @Operation(summary = "Update project", description = "Update project information (Admin only)")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,9 +68,9 @@ public class ProjectController {
             @PathVariable Long id,
             @Valid @RequestBody ProjectRequestDto requestDto) {
         ProjectResponseDto project = projectService.updateProject(id, requestDto);
-        return ResponseEntity.ok(StandardResponse.success(project, "Proj ect updated successfully"));
+        return ResponseEntity.ok(StandardResponse.success(project, "Project updated successfully"));
     }
-    
+
     @Operation(summary = "Delete project", description = "Delete project (Admin only)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -76,7 +78,7 @@ public class ProjectController {
         projectService.deleteProject(id);
         return ResponseEntity.ok(StandardResponse.success("Project deleted successfully"));
     }
-    
+
     @Operation(summary = "Update project status", description = "Update project status (Admin only)")
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
@@ -86,5 +88,13 @@ public class ProjectController {
         Project.Status status = Project.Status.valueOf(request.get("status"));
         ProjectResponseDto project = projectService.updateProjectStatus(id, status);
         return ResponseEntity.ok(StandardResponse.success(project, "Project status updated successfully"));
+    }
+
+    @Operation(summary = "Get user project history", description = "Get the project history for a specific user (Admin only)")
+    @GetMapping("/user-history/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<StandardResponse<List<UserProjectHistoryResponseDto>>> getUserProjectHistory(@PathVariable Long userId) {
+        List<UserProjectHistoryResponseDto> history = projectService.getUserProjectHistory(userId);
+        return ResponseEntity.ok(StandardResponse.success(history));
     }
 }
