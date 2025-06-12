@@ -20,6 +20,8 @@ public class ProjectResponseDto {
     private LocalDate startDate;
     
     private LocalDate endDate;
+
+    private LocalDate actualClosedDate;
     
     private Project.ProjectType projectType;
     

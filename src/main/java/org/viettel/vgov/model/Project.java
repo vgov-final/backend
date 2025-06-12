@@ -36,6 +36,9 @@ public class Project {
     
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @Column(name = "actual_closed_date")
+    private LocalDate actualClosedDate;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "project_type", nullable = false, length = 20)

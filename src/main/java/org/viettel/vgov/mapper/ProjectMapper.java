@@ -31,6 +31,7 @@ public class ProjectMapper implements BaseMapper<Project, ProjectRequestDto, Pro
         dto.setPmEmail(entity.getPmEmail());
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
+        dto.setActualClosedDate(entity.getActualClosedDate());
         dto.setProjectType(entity.getProjectType());
         dto.setStatus(entity.getStatus());
         dto.setDescription(entity.getDescription());

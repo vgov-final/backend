@@ -24,6 +24,7 @@ import org.viettel.vgov.repository.UserRepository;
 import org.viettel.vgov.security.UserPrincipal;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -226,6 +227,10 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
 
+        if (project.getStatus() == Project.Status.Closed) {
+            throw new IllegalStateException("Cannot update a closed project.");
+        }
+
         // Check if project code is being changed and if it already exists
         if (!project.getProjectCode().equals(requestDto.getProjectCode()) &&
             projectRepository.existsByProjectCode(requestDto.getProjectCode())) {
@@ -249,6 +254,10 @@ public class ProjectService {
         project.setStartDate(requestDto.getStartDate());
         project.setEndDate(requestDto.getEndDate());
         project.setProjectType(requestDto.getProjectType());
+        // Check if status is changing to Closed to set the actualClosedDate
+        if (requestDto.getStatus() == Project.Status.Closed && project.getStatus() != Project.Status.Closed) {
+            project.setActualClosedDate(LocalDate.now());
+        }
         project.setStatus(requestDto.getStatus());
         project.setDescription(requestDto.getDescription());
         project.setUpdatedBy(currentUser);
@@ -267,6 +276,18 @@ public class ProjectService {
     public ProjectResponseDto updateProjectStatus(Long id, Project.Status status) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
+
+        if (project.getStatus() == Project.Status.Closed) {
+            throw new IllegalStateException("Cannot change the status of a closed project.");
+        }
+
+        // Set the actual closed date if the status is changing to "Closed"
+        if (status == Project.Status.Closed) {
+            project.setActualClosedDate(LocalDate.now());
+        } else {
+            // If for some reason the project is reopened, clear the date
+            project.setActualClosedDate(null);
+        }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
