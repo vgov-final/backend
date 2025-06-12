@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.viettel.vgov.dto.request.ProjectMemberRequestDto;
 import org.viettel.vgov.dto.response.ProjectMemberResponseDto;
+import org.viettel.vgov.dto.response.WorkloadHistoryResponseDto;
 import org.viettel.vgov.service.ProjectMemberService;
 
 import java.util.List;
@@ -70,5 +71,15 @@ public class ProjectMemberController {
             @PathVariable Long userId) {
         projectMemberService.removeMemberFromProject(id, userId);
         return ResponseEntity.ok(Map.of("message", "Member removed from project successfully"));
+    }
+
+    @Operation(summary = "Get member workload history", description = "Get workload change history for a project member (Admin only)")
+    @GetMapping("/{id}/members/{userId}/history")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<WorkloadHistoryResponseDto>> getMemberWorkloadHistory(
+            @PathVariable Long id,
+            @PathVariable Long userId) {
+        List<WorkloadHistoryResponseDto> history = projectMemberService.getWorkloadHistory(id, userId);
+        return ResponseEntity.ok(history);
     }
 }

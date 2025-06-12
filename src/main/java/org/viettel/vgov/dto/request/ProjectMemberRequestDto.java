@@ -18,6 +18,8 @@ public class ProjectMemberRequestDto {
     @DecimalMin(value = "0.00", message = "Workload percentage must be non-negative")
     @DecimalMax(value = "100.00", message = "Workload percentage cannot exceed 100%")
     private BigDecimal workloadPercentage;
+
+    private String reason;
     
     private LocalDate joinedDate;
     
