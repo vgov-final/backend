@@ -12,11 +12,13 @@ import org.viettel.vgov.exception.ResourceNotFoundException;
 import org.viettel.vgov.mapper.NotificationMapper;
 import org.viettel.vgov.model.Notification;
 import org.viettel.vgov.model.Project;
+import org.viettel.vgov.model.ProjectMember;
 import org.viettel.vgov.model.User;
 import org.viettel.vgov.repository.NotificationRepository;
-import org.viettel.vgov.repository.UserRepository;
+import org.viettel.vgov.repository.ProjectMemberRepository;
 import org.viettel.vgov.security.UserPrincipal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,89 +26,69 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class NotificationService {
-    
+
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final NotificationMapper notificationMapper;
-    
+
     public Page<NotificationResponseDto> getCurrentUserNotifications(Pageable pageable, Boolean isRead, String notificationType) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         Page<Notification> notifications = notificationRepository.findByUserIdWithFilters(
                 userPrincipal.getId(), isRead, notificationType, pageable);
-        
         return notifications.map(notificationMapper::toResponseDto);
     }
-    
+
     public List<NotificationResponseDto> getAllCurrentUserNotifications() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userPrincipal.getId());
         return notifications.stream()
                 .map(notificationMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
-    
+
     public List<NotificationResponseDto> getUnreadNotifications() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         List<Notification> notifications = notificationRepository.findUnreadNotificationsByUserId(userPrincipal.getId());
         return notifications.stream()
                 .map(notificationMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
-    
+
     public long getUnreadCount() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         return notificationRepository.countUnreadNotificationsByUserId(userPrincipal.getId());
     }
-    
+
     public void markAsRead(Long notificationId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));
-        
-        // Check if the notification belongs to the current user
+
         if (!notification.getUser().getId().equals(userPrincipal.getId())) {
-            throw new ResourceNotFoundException("Notification not found");
+            throw new ResourceNotFoundException("Notification not found for current user with id: " + notificationId);
         }
-        
+
         notification.setIsRead(true);
         notificationRepository.save(notification);
     }
-    
+
     public void markAllAsRead() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
-        List<Notification> unreadNotifications = notificationRepository.findUnreadNotificationsByUserId(userPrincipal.getId());
-        unreadNotifications.forEach(notification -> notification.setIsRead(true));
-        notificationRepository.saveAll(unreadNotifications);
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
+        notificationRepository.markAllAsReadForUser(userPrincipal.getId());
     }
-    
+
     public void deleteNotification(Long notificationId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
+        UserPrincipal userPrincipal = getCurrentUserPrincipal();
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + notificationId));
-        
-        // Check if the notification belongs to the current user
+
         if (!notification.getUser().getId().equals(userPrincipal.getId())) {
-            throw new ResourceNotFoundException("Notification not found");
+            throw new ResourceNotFoundException("Notification not found for current user with id: " + notificationId);
         }
-        
+
         notificationRepository.delete(notification);
     }
-    
-    // Helper method to create notifications (used by other services)
+
     public void createNotification(User user, String title, String message, String notificationType, Project relatedProject, User relatedUser) {
         Notification notification = new Notification();
         notification.setUser(user);
@@ -116,13 +98,46 @@ public class NotificationService {
         notification.setRelatedProject(relatedProject);
         notification.setRelatedUser(relatedUser);
         notification.setIsRead(false);
-        
+
         notificationRepository.save(notification);
     }
-    
-    // Helper method to create project-related notifications for all project members
-    public void createProjectNotification(Project project, String title, String message, String notificationType, User relatedUser) {
-        // This would require getting all project members and creating notifications for them
-        // Implementation depends on ProjectMemberRepository access
+
+    public void createProjectNotification(Project project, String title, String message, String notificationType, User originatorUser) {
+        List<ProjectMember> activeMembers = projectMemberRepository.findByProjectIdAndIsActiveTrue(project.getId());
+        List<Notification> notificationsToSave = new ArrayList<>();
+
+        for (ProjectMember member : activeMembers) {
+            if (originatorUser != null && member.getUser().getId().equals(originatorUser.getId())) {
+                continue;
+            }
+
+            Notification notification = new Notification();
+            notification.setUser(member.getUser());
+            notification.setTitle(title);
+            notification.setMessage(message);
+            notification.setNotificationType(notificationType);
+            notification.setRelatedProject(project);
+            notification.setRelatedUser(originatorUser);
+            notification.setIsRead(false);
+            notificationsToSave.add(notification);
+        }
+
+        if (!notificationsToSave.isEmpty()) {
+            notificationRepository.saveAll(notificationsToSave);
+        }
+    }
+
+    public void notifyUserAddedToProject(Project project, User newUser, User addedBy) {
+        String title = "Bạn đã được thêm vào dự án mới";
+        String message = String.format("Bạn đã được %s thêm vào dự án %s.", addedBy.getFullName(), project.getProjectName());
+        createNotification(newUser, title, message, "project", project, addedBy);
+    }
+
+    private UserPrincipal getCurrentUserPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new IllegalStateException("No authenticated user found");
+        }
+        return (UserPrincipal) authentication.getPrincipal();
     }
 }

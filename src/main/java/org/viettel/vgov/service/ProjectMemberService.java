@@ -42,6 +42,7 @@ public class ProjectMemberService {
     private final UserMapper userMapper;
     private final WorkloadHistoryRepository workloadHistoryRepository;
     private final WorkloadHistoryMapper workloadHistoryMapper;
+    private final NotificationService notificationService;
 
     public List<ProjectMemberResponseDto> getProjectMembers(Long projectId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -131,7 +132,7 @@ public class ProjectMemberService {
 
         ProjectMember savedMember = projectMemberRepository.save(projectMember);
 
-        // TODO: Send notification to all project members about new member
+        notificationService.notifyUserAddedToProject(project, user, currentUser);
 
         return projectMemberMapper.toResponseDto(savedMember);
     }
